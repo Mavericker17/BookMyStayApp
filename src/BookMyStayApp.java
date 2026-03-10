@@ -1,5 +1,6 @@
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
+// -------------------- Room Classes --------------------
 
 abstract class Room {
 
@@ -45,6 +46,8 @@ class SuiteRoom extends Room {
     }
 }
 
+// -------------------- Room Inventory --------------------
+
 class RoomInventory {
 
     private Map<String, Integer> roomAvailability;
@@ -69,47 +72,90 @@ class RoomInventory {
     }
 }
 
+// -------------------- Reservation --------------------
+
+class Reservation {
+
+    /** Name of the guest making the booking */
+    private String guestName;
+
+    /** Requested room type */
+    private String roomType;
+
+    /**
+     * Creates a new booking request
+     */
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() {
+        return guestName;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+}
+
+// -------------------- Booking Queue --------------------
+
+class BookingRequestQueue {
+
+    /** Queue storing booking requests */
+    private Queue<Reservation> requestQueue;
+
+    public BookingRequestQueue() {
+        requestQueue = new LinkedList<>();
+    }
+
+    /** Add booking request */
+    public void addRequest(Reservation reservation) {
+        requestQueue.offer(reservation);
+    }
+
+    /** Get next booking request */
+    public Reservation getNextRequest() {
+        return requestQueue.poll();
+    }
+
+    /** Check if queue has requests */
+    public boolean hasPendingRequests() {
+        return !requestQueue.isEmpty();
+    }
+}
+
+// -------------------- Main Application --------------------
+
 public class BookMyStayApp {
 
     public static void main(String[] args) {
 
-        Room singleRoom = new SingleRoom();
-        Room doubleRoom = new DoubleRoom();
-        Room suiteRoom = new SuiteRoom();
+        System.out.println("Booking Request Queue\n");
 
-        RoomInventory inventory = new RoomInventory();
+        // Initialize booking queue
+        BookingRequestQueue bookingQueue = new BookingRequestQueue();
 
-        BookMyStayApp app = new BookMyStayApp();
+        // Create booking requests
+        Reservation r1 = new Reservation("Abhi", "Single");
+        Reservation r2 = new Reservation("Subha", "Double");
+        Reservation r3 = new Reservation("Vanmathi", "Suite");
 
-        System.out.println("Searching Available Rooms...\n");
+        // Add requests to queue
+        bookingQueue.addRequest(r1);
+        bookingQueue.addRequest(r2);
+        bookingQueue.addRequest(r3);
 
-        app.searchAvailableRooms(inventory, singleRoom, doubleRoom, suiteRoom);
-    }
+        // Process booking requests in FIFO order
+        while (bookingQueue.hasPendingRequests()) {
 
-    public void searchAvailableRooms(
-            RoomInventory inventory,
-            Room singleRoom,
-            Room doubleRoom,
-            Room suiteRoom) {
+            Reservation request = bookingQueue.getNextRequest();
 
-        Map<String, Integer> availability = inventory.getRoomAvailability();
-
-        // Check Single Room availability
-        if (availability.get("Single") > 0) {
-            singleRoom.displayRoom();
-            System.out.println("Available: " + availability.get("Single") + "\n");
-        }
-
-        // Check Double Room availability
-        if (availability.get("Double") > 0) {
-            doubleRoom.displayRoom();
-            System.out.println("Available: " + availability.get("Double") + "\n");
-        }
-
-        // Check Suite Room availability
-        if (availability.get("Suite") > 0) {
-            suiteRoom.displayRoom();
-            System.out.println("Available: " + availability.get("Suite") + "\n");
+            System.out.println("Processing Booking:");
+            System.out.println("Guest Name: " + request.getGuestName());
+            System.out.println("Requested Room: " + request.getRoomType());
+            System.out.println("---------------------------");
         }
     }
 }
