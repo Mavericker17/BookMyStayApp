@@ -159,3 +159,59 @@ public class BookMyStayApp {
         }
     }
 }
+
+class RoomAllocationService {
+
+    private Set<String> allocatedRoomIds;
+
+    private Map<String, Set<String>> assignedRoomsByType;
+
+    public RoomAllocationService() {
+        allocatedRoomIds = new HashSet<>();
+        assignedRoomsByType = new HashMap<>();
+    }
+
+    public void allocateRoom(Reservation reservation, RoomInventory inventory) {
+
+        String roomType = reservation.getRoomType();
+        Map<String, Integer> availability = inventory.getRoomAvailability();
+
+        if (availability.getOrDefault(roomType, 0) > 0) {
+
+            String roomId = generateRoomId(roomType);
+
+            allocatedRoomIds.add(roomId);
+
+            assignedRoomsByType
+                    .computeIfAbsent(roomType, k -> new HashSet<>())
+                    .add(roomId);
+
+            inventory.updateAvailability(roomType,
+                    availability.get(roomType) - 1);
+
+            System.out.println("Booking Confirmed!");
+            System.out.println("Guest: " + reservation.getGuestName());
+            System.out.println("Room Type: " + roomType);
+            System.out.println("Assigned Room ID: " + roomId);
+            System.out.println("-----------------------------");
+
+        } else {
+            System.out.println("No available rooms for " + roomType +
+                    " for guest " + reservation.getGuestName());
+        }
+    }
+
+    private String generateRoomId(String roomType) {
+
+        String prefix = roomType.substring(0, 1).toUpperCase();
+
+        String roomId;
+
+        do {
+            int number = new Random().nextInt(900) + 100;
+            roomId = prefix + number;
+        } while (allocatedRoomIds.contains(roomId));
+
+        return roomId;
+    }
+}
